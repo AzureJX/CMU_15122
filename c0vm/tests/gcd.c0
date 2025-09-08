@@ -1,0 +1,25 @@
+#use <util>
+
+int gcd(int x, int y)
+//@requires x != 0 && y != 0;
+//@ensures x % \result == 0 && y % \result == 0;
+{
+    int a = abs(max(x,y));
+    int b = abs(min(x,y));
+    int q = a/b;
+    int r = a%b;
+    while (r > 0)
+    //@loop_invariant 0 <= r && r < abs(b);
+    //@loop_invariant a == q*b+r;
+    { 
+        a = b;
+        b = r;
+        q = a/b;
+        r = a%b;
+    }
+    return b;
+}
+
+int main() {
+    return gcd(15,122);
+}

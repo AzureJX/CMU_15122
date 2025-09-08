@@ -1,0 +1,27 @@
+#use <util>
+#use <string>
+#use <conio>
+
+int main() {
+    meeting_bloom_t MB = meeting_bloom_new(10);
+    meeting* m1 = alloc(meeting);
+    m1->date = "9pm on 8/05/2019";
+    m1->duration = 10000;    
+    meeting* m2 = alloc(meeting);
+    m2->date = "2pm on 2/21/2025";
+    m2->duration = 298;    
+    meeting* m3 = alloc(meeting);
+    m3->date = "12am on 11/18/2005";
+    m3->duration = 42;
+
+    meeting_bloom_add(MB, m1);
+    meeting_bloom_add(MB, m3);
+
+    assert(meeting_bloom_contains(MB, m1));
+    assert(meeting_bloom_contains(MB, m3));
+    assert(!meeting_bloom_contains(MB, m2));
+
+    printf("All tests passed!\n");
+
+    return 0;
+}

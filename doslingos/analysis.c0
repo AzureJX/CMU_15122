@@ -1,0 +1,84 @@
+#use <args>
+
+int main()
+{
+  args_t args = args_parse(); // argument string
+  string[] argv = args->argv; // arguments
+
+  bundle_t B1 = read_words(argv[0]);
+  string[] vocab = string_bundle_array(B1);
+  int vocab_len = string_bundle_length(B1);
+  string text = argv[1];  
+  int[] freq = alloc_array(int, vocab_len);
+
+  count_vocab(vocab, freq, vocab_len, text, true);
+  sort_by_freq(vocab, freq, vocab_len);
+  // 1
+  printf("The four most common words in the text corpus are:\n");
+  for (int i=1; i<=4; i++)
+  {
+    if (i <= vocab_len && freq[vocab_len-i] != 0)
+    //@assert 0<=vocab_len-i && vocab_len-i<vocab_len;
+    {
+      printf("%d. %s (appears %d times)\n", i,
+             vocab[vocab_len-i], freq[vocab_len-i]);
+    } else {
+      printf("%d. N/A\n", i);
+    }
+  }
+  printf("\n");
+  
+  // 2
+  printf("These words appeared 128 times in the text corpus:");
+  int i = 0;
+  bool none1 = true;
+  while (i < vocab_len && freq[i] <= 128)
+  //@loop_invariant 0<=i && i<=vocab_len;
+  {
+    if (freq[i] == 128) {
+      none1 = false;
+      printf(" %s", vocab[i]);
+    }
+    i++;
+  }
+  if (none1) printf(" N/A");
+  printf("\n\n");
+  
+  // 3
+  printf("There are");
+  int j = 0;
+  int count = 0;
+  while (j < vocab_len && freq[j] <= 1)
+  //@loop_invariant 0<=j && j<=vocab_len;
+  {
+    if (freq[j] == 1) {
+      count ++;
+    }
+    j++;
+  }
+  printf(" %d singletons in the corpus.", count);
+  printf("\n\n");
+  
+  // 4
+  printf("There are");
+  int prev_freq;
+  int freq_count = 1;
+  if (vocab_len > 0) {
+    prev_freq = freq[0];
+  } else {
+    freq_count = 0;
+    prev_freq = 0;
+  }
+  for (int k=1; k<vocab_len; k++)
+  //@loop_invariant 1<=k && k<=vocab_len;
+  {
+    if (freq[k] != prev_freq) {
+      freq_count ++;
+      prev_freq = freq[k];
+    }
+  }
+  printf(" %d distinct frequency counts in the corpus.", freq_count);
+  printf("\n");
+
+  return 0;
+}

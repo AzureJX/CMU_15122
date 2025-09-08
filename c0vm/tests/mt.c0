@@ -1,0 +1,27 @@
+#use <conio>
+
+struct A_h {
+    int a;
+    int b;
+};
+struct B_h {
+    int x;
+    struct A_h *y;
+};
+
+int addall(int y) {
+    struct B_h *B = alloc(struct B_h);
+    B->x = y;
+    B->y = alloc(struct A_h);
+    B->y->a = y;
+    B->y->b = y;
+    return B->x + B->y->a + B->y->b;
+}
+
+int main() {
+    struct A_h *A = alloc(struct A_h);
+    A->a = 3;
+    A->b = 4;
+    printint(addall(A->b) + addall(A->a));
+    return 0;
+}

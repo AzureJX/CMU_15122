@@ -1,0 +1,74 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <rand>
+#use <util>
+#use <string>
+#use <conio>
+#use <parse>
+
+// The functions parse_tokens from the <parse> library may streamline
+// this task
+
+// You are welcome to define helper functions for your tests
+int cal_score(string_bloom_t B, string[] S, int l)
+//@requires \length(S) == l;
+{
+  int num_true = 0;
+  for (int i=0;i<l;i++) {
+    if (string_bloom_contains(B, S[i])) num_true++;
+  }
+  return 100 - num_true * 100/l;
+}
+
+int main() {
+  // Create a few bloom filters to test CORRECTNESS: here, focus on
+  //      raising assertion errors on any incorrect implementation
+  //      of the interface
+  string_bloom_t B = string_bloom_new(10);
+  string_bloom_t B2 = string_bloom_new(100000);
+  string_bloom_t B3 = string_bloom_new(1);
+  assert(B!=NULL); assert(B2!=NULL); assert(B3!=NULL);
+  string[] SA = parse_tokens("a bc efg hijk lmnop qrstxyz sodnvceo enorenfoc poasdcnoci");
+  string[] SA2 = parse_tokens("wodc owhow ohn eiunuiec eirnfieru ern r a p j m wn fv jy sa");
+  for (int i=0;i<9; i++) {
+    string_bloom_add(B, SA[i]);
+    assert(B!=NULL);
+  }
+  for (int i=0;i<15; i++) {
+    string_bloom_add(B, SA2[i]);
+    assert(B!=NULL);
+  }
+  for (int i=0;i<9; i++) {
+    assert(string_bloom_contains(B, SA[i]));
+    assert(B!=NULL);
+  }
+  for (int i=0;i<15; i++) {
+    assert(string_bloom_contains(B, SA2[i]));
+    assert(B!=NULL);
+  }
+  
+  printf("All correctness tests passed!\n\n");
+
+  // Create a few bloom filters to test ACCURACY: this part should
+  //     compute and return a accuracy score between 0 and 100 that
+  //     assesses how bad or good a bloom filter implementation is
+  string[] notIn = parse_tokens("b c d e f g sd jk pl nvc ifg hijp aoncre odvnrofa eeiunuiec eionrooigg wornfoeirnfoer dncw mcpql eiunuiece");
+  int score1 = cal_score(B, notIn, 20);
+  
+  string_bloom_t B4 = string_bloom_new(10); // load factor 0.2
+  string_bloom_add(B4, "happy"); string_bloom_add(B4, "sad");
+  int score2 = cal_score(B4, notIn, 20);
+
+  string_bloom_t B5 = string_bloom_new(5);
+  string_bloom_add(B5, "a");
+  string_bloom_add(B5, "bb");
+  string_bloom_add(B5, "ccc");
+  string[] notInB5 = parse_tokens("b cc aaa dicms snnoo bbbb aa kkkkkk lldncvoq djcnwojcn");
+  int score3 = cal_score(B5, notInB5, 10);
+
+  printf("Returning the accuracy score.\n");
+
+  return (score1+score2+score3)/3;
+}

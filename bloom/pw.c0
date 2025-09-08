@@ -1,0 +1,93 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Password checker (application of Bloom filters)
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <string>
+#use <file>
+
+struct pwDB_header {
+  string_bloom_t filter;  // != NULL
+  string badpwfile;       // string_length(badpwfile) > 0; badpwfile exists
+};
+typedef struct pwDB_header pwDB;
+
+
+/******************* MAKE YOUR EDITS BETWEEN HERE ... *******************/
+
+bool is_pwDB(pwDB* B) {
+  if (B==NULL || B->filter==NULL) return false;
+  if (string_length(B->badpwfile) <= 0) return false;
+  file_t file = file_read(B->badpwfile);
+  if (file==NULL) {
+    return false;
+  }
+  file_close(file);
+  return true;
+}
+
+// Create a pwDB database from file badpwfile
+// - Each password occupies a whole separate line of badpwfile
+// - Adds every password from badpwfile to the Bloom filter, skip empty lines
+// You will need to refer to the <file> library documentation
+pwDB* pwDB_new(int capacity, string badpwfile)
+//@requires capacity > 0 && string_length(badpwfile) > 0;
+//@ensures is_pwDB(\result);
+{
+  pwDB* DB = alloc(pwDB);
+  DB->filter = string_bloom_new(capacity);
+  DB->badpwfile = badpwfile;
+  
+  file_t file = file_read(badpwfile);
+  string s;
+  while(!file_eof(file)) {
+    s = file_readline(file);
+    if (!string_equal(s, "\n")) string_bloom_add(DB->filter, s);
+  }
+  file_close(file);
+  return DB;
+}
+
+// Thorough, but slow, password check
+// - Return true if s appears in B's bad password file
+// - Return false if s does not appear in B's bad password file
+// You will need to refer to the <file> library documentation
+bool pwDB_thoroughcheck(pwDB* B, string s)
+//@requires is_pwDB(B) && string_length(s) > 0;
+{
+  file_t file = file_read(B->badpwfile);
+  while(!file_eof(file)) {
+    if (string_equal(s, file_readline(file))){
+      file_close(file);
+      return true;
+    }
+  }
+  file_close(file);
+  return false;
+}
+
+// Password check, fast when possible, thorough otherwise
+// Returns 2 if s is uncompromised and a quick check is sufficient
+//         1 if s is uncompromised but a thorough check was necessary
+//         0 if s is compromised
+int pwDB_check(pwDB* B, string s)
+//@requires is_pwDB(B) && string_length(s) > 0;
+//@ensures is_pwDB(B) && 0 <= \result && \result <= 2;
+{
+  if (!string_bloom_contains(B->filter, s)) return 2;
+  if (pwDB_thoroughcheck(B, s)) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+/***************************** ... AND HERE *****************************/
+
+
+typedef pwDB* pwDB_t;

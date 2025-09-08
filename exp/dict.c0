@@ -1,0 +1,137 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Interface for dictionaries
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <string>
+#use <conio>
+
+/************************************************************************/
+/************************* BEGIN IMPLEMENTATION *************************/
+
+typedef struct dict_header dict;
+
+/************ insert your implementation code between HERE ************/
+
+struct dict_header {
+  int length;
+  int[] precedence;
+  string[] operators;
+};
+
+int numOfOpe(string[] A, int n)
+//@requires \length(A) == n;
+//@ensures \result >= 0;
+{
+  int totalNum = 0;
+  for (int i = 0; i < n; i++)
+  //@loop_invariant 0<=i && i<=n;
+  {
+    totalNum += num_tokens(A[i]);
+  }
+  return totalNum;
+}
+
+bool string_is_in(string x, string[] S, int n)
+//@requires \length(S) == n;
+{
+  for (int i = 0; i < n; i++)
+  //@loop_invariant 0<=i && i<=n;
+  {
+    if (string_equal(S[i], x)) return true;
+  }
+  return false;
+}
+
+bool correctLengthS(string[] A, int n) {
+  //@assert \length(A) == n;
+  return true;
+}
+
+bool correctLengthI(int[] A, int n) {
+  //@assert \length(A) == n;
+  return true;
+}
+
+bool is_dict(dict* Dic) {
+  return Dic != NULL 
+         && correctLengthI(Dic->precedence, Dic->length)
+         && correctLengthS(Dic->operators, Dic->length);
+}
+
+dict* dict_new(string[] A, int n)
+//@requires \length(A) == n;
+//@requires is_infix_array(A, n);
+//@ensures \result == NULL || is_dict(\result);
+{
+  dict* Dic = alloc(dict);
+  int numOp = numOfOpe(A, n);
+  Dic->length = numOp;
+  Dic->precedence = alloc_array(int, numOp);
+  Dic->operators = alloc_array(string, numOp);
+
+  int dicInd = 0;
+  while (dicInd < numOp)
+  //@loop_invariant dicInd <= numOp;
+  {
+    for (int i = 0; i < n; i++)
+    //@loop_invariant 0<=i && i<=n;
+    {
+      string[] ithPreOpe = parse_tokens(A[i]);
+      int numithOpe = num_tokens(A[i]);
+      for (int j = 0; j < numithOpe; j++)
+      //@loop_invariant 0<=j && j<=numithOpe;
+      {
+        string ope = ithPreOpe[j];
+        if (string_is_in(ope, Dic->operators, numOp)) return NULL;
+        Dic->operators[dicInd] = ope;
+        Dic->precedence[dicInd] = i;
+        dicInd ++;
+      }
+    }
+  }
+  return Dic;
+}
+
+int dict_lookup(dict* D, string oper)
+//@requires is_dict(D);
+//@ensures is_dict(D);
+//@ensures \result >= -1;
+{
+  for (int i = 0; i < D->length; i++)
+  //@loop_invariant 0<=i && i <= D->length;
+  {
+    if (string_equal(D->operators[i], oper)) return D->precedence[i];
+  }
+  return -1;
+}
+
+// Advice: implementing a dict_print function may help you debug
+
+/****************************** and HERE ******************************/
+typedef dict* dict_t;
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/* Interface of dictionaries (leave this alone) */
+
+/************************************************************************/
+/******************************* Interface ******************************/
+
+// typedef ______* dict_t;
+
+// Returns NULL if the input array has the same operator twice
+dict_t dict_new(string[] A, int n)
+  /*@requires \length(A) == n; @*/
+  /*@requires is_infix_array(A, n); @*/ ;
+
+// Returns -1 if no definition is found
+int dict_lookup(dict_t D, string oper)
+  /*@requires D != NULL; @*/
+  /*@ensures \result >= -1; @*/ ;

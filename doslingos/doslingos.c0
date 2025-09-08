@@ -1,0 +1,139 @@
+int binsearch(string x, string[] A, int n) 
+//@requires 0 <= n && n <= \length(A);
+//@requires string_is_sorted(A, 0, n);
+/*@ensures (-1 == \result && !string_is_in(x, A, 0, n))
+             || ((0 <= \result && \result < n)
+                 && string_equal(A[\result], x)); @*/ 
+{
+    int lo = 0;
+    int hi = n;
+    while (lo<hi) 
+    //@loop_invariant 0<=lo&&lo<=hi&&hi<=n;
+    /*@loop_invariant string_gt_seg(x, A, 0, lo) &&
+                      string_lt_seg(x, A, hi, n); @*/
+    {
+        int mid = lo + (hi-lo)/2;
+        if (string_equal(A[mid], x)) return mid;
+        if (string_compare(A[mid], x)<0) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    return -1;
+}
+
+bool no_dupes(string[] A, int lo, int hi)
+/*@requires 0 <= lo && lo <= hi && hi <= \length(A); @*/ 
+{
+    for (int i=lo; i<hi; i++)
+    //@loop_invariant lo<=i && i<=hi;
+    {
+        string x = A[i];
+        for (int j=i+1; j<hi; j++)
+        //@loop_invariant lo<j && j<=hi;
+        {
+            if (string_equal(x, A[j])) return false;
+        }
+    }
+    return true;
+}
+
+int count_vocab(string[] vocab, int[] freq, int v, string corpus, bool fast)
+//@requires v == \length(vocab) && v == \length(freq);
+//@requires string_is_sorted(vocab, 0, v);
+//@requires no_dupes(vocab, 0, v);
+{
+    bundle_t B = read_words(corpus);
+    string[] text = string_bundle_array(B);
+    int text_len = string_bundle_length(B);
+    int count = 0;
+    for (int i=0; i<text_len; i++) // for every word in the text
+    //@loop_invariant 0<=i && i<=text_len;
+    {
+        string word = text[i];
+        int word_index;
+        if (fast) {
+            word_index = binsearch(word, vocab, v);
+        } else {
+            word_index = linsearch(word, vocab, v);
+        }
+        if (word_index==-1) {
+            count++;
+        } else {
+            freq[word_index] ++;
+        }
+    }
+    return count;
+}
+
+void merge(string[] vocab, int[] freq, int lo, int mid, int hi)
+// adapt the code from quicksort on 15122 website
+//@requires 0<=lo && lo<=mid && mid<=hi && hi<=\length(vocab);
+//@requires int_is_sorted(freq, lo, mid) && int_is_sorted(freq, mid, hi);
+//@ensures int_is_sorted(freq, lo, hi);
+{
+  int[] freq_temp = alloc_array(int, hi-lo);
+  string[] vocab_temp = alloc_array(string, hi-lo);
+  int i = lo; // left half
+  int j = mid; // right half
+  int k = 0; // index for temp
+
+  while (i < mid && j < hi)
+  //@loop_invariant lo <= i && i <= mid;
+  //@loop_invariant mid <= j && j <= hi;
+  //@loop_invariant k == (i - lo) + (j - mid);
+  {
+    if (freq[i] <= freq[j]) {
+      freq_temp[k] = freq[i];
+      vocab_temp[k] = vocab[i];
+      i++;
+    } else { //@assert freq[i] > freq[j];
+      freq_temp[k] = freq[j];
+      vocab_temp[k] = vocab[j];
+      j++;
+    }
+    k++;
+  }
+  //@assert i == mid || j == hi;
+  
+  while (i < mid) 
+  //@loop_invariant i<=mid; 
+  { 
+    freq_temp[k] = freq[i];
+    vocab_temp[k] = vocab[i];
+    i++; k++; }
+
+  while (j < hi)  
+  //@loop_invariant j <= hi; 
+  {
+    freq_temp[k] = freq[j];
+    vocab_temp[k] = vocab[j];
+    j++; k++; }
+
+  // Copy sorted array back
+  for (k = 0; k < hi-lo; k++)
+  //@loop_invariant 0<=k && k<=hi-lo;
+  {
+    freq[lo+k] = freq_temp[k];
+    vocab[lo+k] = vocab_temp[k];
+  }
+}
+
+void mergesort(string[] vocab, int[] freq, int lo, int hi)
+//@requires 0<=lo && lo<=hi && hi<=\length(vocab);
+//@ensures int_is_sorted(freq, lo, hi);
+{
+    if (hi-lo<=1) return;
+    int mid = lo + (hi-lo)/2;  //@assert lo < mid && mid < hi;
+    mergesort(vocab, freq, lo, mid);
+    mergesort(vocab, freq, mid, hi);
+    merge(vocab, freq, lo, mid, hi);
+}
+
+void sort_by_freq(string[] vocab, int[] freq, int v)
+//@requires v == \length(vocab) && v == \length(freq);
+//@ensures int_is_sorted(freq, 0, v);
+{
+    mergesort(vocab, freq, 0, v);
+}

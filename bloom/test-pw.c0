@@ -1,0 +1,25 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <string>
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+int main() {
+  // Create a password database and check a few passwords against it.
+
+  pwDB_t DB = pwDB_new(30, "data/20-badpw.txt");
+  assert(pwDB_check(DB, "1234567890")==0);
+  assert(pwDB_check(DB, "password")==0);
+  assert(pwDB_check(DB, "qwertyuiop")==0);
+  assert(pwDB_check(DB, "0234567890")==1);
+  assert(pwDB_check(DB, "password13")==1);
+  assert(pwDB_check(DB, "222222")==2);
+  assert(pwDB_check(DB, "aa12345677")==2);
+  assert(pwDB_check(DB, "100000")==1);
+  
+  printf("All tests passed!\n");
+  return 0;
+}

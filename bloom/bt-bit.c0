@@ -1,0 +1,113 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Boolean tables
+ *
+ * 15-122 Principles of Imperative Computation */
+
+#use <util>
+#use <conio>
+
+
+/************************************************************************/
+/************************* BEGIN IMPLEMENTATION *************************/
+
+struct bt_header {
+  int size;      // size >= 0
+  int[] data;    // \length(data) == ceil(size/32)
+};
+typedef struct bt_header bt;
+
+/******************* MAKE YOUR EDITS BETWEEN HERE ... *******************/
+bool len(bt* T) {
+  int n = T->size / 32;
+  if (T->size % 32 > 0) n++;
+  //@assert \length(T->data) == n;
+  return true;
+}
+
+bool is_bt(bt* T) {
+  return T != NULL && T->size >= 0 && len(T);
+}
+
+int bt_size(bt* T)
+/*@requires is_bt(T);                 @*/
+/*@ensures \result >= 0;              @*/
+{
+  return T->size;
+}
+
+// Creates a Bool table with all entries set to false
+bt* bt_new(int size)
+/*@requires size >= 0;                @*/
+/*@ensures is_bt(\result);            @*/
+/*@ensures bt_size(\result) == size;  @*/
+{
+  bt* T = alloc(bt);
+  T->size = size;
+  int len = T->size / 32;
+  if (T->size % 32 > 0) len++;
+  T->data = alloc_array(int, len); // default for int is 0
+  return T;
+}
+
+// Returns the value of the i-th entry of a Bool table
+bool bt_get(bt* T, int i)
+/*@requires is_bt(T);                 @*/
+/*@requires 0 <= i && i < bt_size(T); @*/
+/*@ensures is_bt(T);                  @*/
+{
+  int index = i/32;
+  int shift = i%32;
+  int res = (T->data[index]>>(31-shift)) & 0x1;
+  if (res==0) return false;
+  return true;
+}
+
+// Sets the value of the i-th entry of a Bool table to true
+void bt_set(bt* T, int i)
+/*@requires is_bt(T);                 @*/
+/*@requires 0 <= i && i < bt_size(T); @*/
+/*@ensures is_bt(T);                  @*/
+{
+  int index = i/32;
+  int shift = i%32;
+  T->data[index] = T->data[index] | (0x1<<(31-shift));
+}
+
+
+/***************************** ... AND HERE *****************************/
+
+ // Client type
+typedef bt* bt_t;
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/************************************************************************/
+/******************************* Interface ******************************/
+
+// typedef ______* bt_t;
+
+// Returns the capacity of a Bool table
+int bt_size(bt_t T)
+/*@requires T != NULL;                @*/
+/*@ensures \result >= 0;              @*/ ;
+
+// Creates a Bool table with all entries set to false
+bt_t bt_new(int size)
+/*@requires size >= 0;                @*/
+/*@ensures \result != NULL;           @*/
+/*@ensures bt_size(\result) == size;  @*/ ;
+
+// Returns the value of the i-th entry of a Bool table
+bool bt_get(bt_t T, int i)
+/*@requires T != NULL;                @*/
+/*@requires 0 <= i && i < bt_size(T); @*/ ;
+
+// Sets the value of the i-th entry of a Bool table to true
+void bt_set(bt_t T, int i)
+/*@requires T != NULL;                @*/
+/*@requires 0 <= i && i < bt_size(T); @*/ ;

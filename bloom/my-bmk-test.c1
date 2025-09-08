@@ -1,0 +1,32 @@
+int lcg_hash_string(void* p) {
+  string s = *(string*)p;
+  int len = string_length(s);
+  int h = 0;
+  for (int i = 0; i < len; i++) {
+    h = h + char_ord(string_charat(s, i));
+    h = 1664525 * h + 1013904223;
+  }
+  return h;
+}
+
+int main() {
+    string* sp = alloc(string);
+    *sp = "string";
+    string* sp2 = alloc(string);
+    *sp2 = "string2";
+
+    bmk_t B = bloommaker_new(10);
+    assert(!(bloommaker_frozen(B)));
+    bloommaker_addhash(B, &lcg_hash_string);
+    /* if no hash function is added, the contain func will always return true
+       because its for loop won't run */
+    bloommaker_freeze(B);
+    assert(!bloommaker_contains(B, (void*)sp));
+    bloommaker_add(B, (void*)sp);
+    assert(bloommaker_contains(B, (void*)sp));
+    assert(!bloommaker_contains(B, (void*)sp2));
+
+    printf("All tests passed\n");
+    
+    return 0;
+}

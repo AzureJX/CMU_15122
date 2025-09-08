@@ -1,0 +1,35 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/* Really, really broken implementations of count_vocab and
+ * sort_by_freq. Still satisfies all contracts.
+ */
+
+bool no_dupes(string[] A, int lo, int hi)
+//@requires 0 <= lo && lo <= hi && hi <= \length(A);
+{
+  return true;  // so bad!
+}
+
+int count_vocab(string[] vocab, int[] freq, int v,
+                string tweetfile,
+                bool fast)
+//@requires v == \length(vocab) && v == \length(freq);
+//@requires string_is_sorted(vocab, 0, v);
+//@requires no_dupes(vocab, 0, v);
+{
+  return 10;  // ugh!
+}
+
+void sort_by_freq(string[] vocab, int[] freq, int v)
+//@requires v == \length(vocab) && v == \length(freq);
+//@ensures int_is_sorted(freq, 0, v);
+{
+  for (int i = 0; i < v; i++)
+  //@loop_invariant 0 <= v;
+  //@loop_invariant int_is_sorted(freq, 0, i);
+  {
+    freq[i] = i - v; // told you it was awful
+  }
+}

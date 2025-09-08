@@ -1,0 +1,93 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Bloom filters over date-duration meetings with hash_lcg
+ *
+ * 15-122 Principles of Imperative Computation */
+
+/************************************************************************/
+/************************* BEGIN IMPLEMENTATION *************************/
+
+struct meeting_header {
+  string date;   // e.g. "2pm on 2/21/2025"
+  int duration;  // >= 0
+};
+typedef struct meeting_header meeting;
+
+
+int hash_lcg(string x) { // Numerical Recipies LCG
+  int h = 0xDEADBEEF;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h + c;
+    h = h*1664525 + 1013904223;
+  }
+  return h;
+}
+
+// Use this copy of hash_meeting if you need to discard your previous
+// work and start over
+int copy_of_hash_meeting(meeting* m)
+//@requires m != NULL;
+{
+  return hash_lcg(string_join(m->date, int2hex(m->duration)));
+}
+
+/******************* MAKE YOUR EDITS BETWEEN HERE ... *******************/
+
+// You will need to make changes to this function
+int hash_meeting(void* p)
+//@requires p != NULL && \hastag(meeting*, p);
+{
+  meeting* m = (meeting*) p;
+  return hash_lcg(string_join(m->date, int2hex(m->duration)));
+}
+
+typedef bmk_t meeting_bloom_t;
+
+meeting_bloom_t meeting_bloom_new(int capacity)
+/*@requires 0 < capacity; @*/
+/*@ensures \result != NULL && bloommaker_frozen(\result); @*/
+{
+    meeting_bloom_t B = bloommaker_new(capacity);
+    bloommaker_addhash(B, &hash_meeting);
+    bloommaker_freeze(B);
+    return B;
+}
+
+bool meeting_bloom_contains(meeting_bloom_t B,  meeting* x)
+/*@requires B != NULL; @*/
+{
+    return bloommaker_contains(B, (void*)x);
+}
+
+void meeting_bloom_add(meeting_bloom_t B, meeting* x)
+/*@requires B != NULL; @*/
+/*@ensures meeting_bloom_contains(B, x); @*/
+{
+    bloommaker_add(B, (void*)x);
+}
+
+/***************************** ... AND HERE *****************************/
+
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/************************************************************************/
+/******************************* Interface ******************************/
+
+// typedef ______* meeting_bloom_t;
+
+meeting_bloom_t meeting_bloom_new(int capacity)
+  /*@requires 0 < capacity;   @*/
+  /*@ensures \result != NULL; @*/ ;
+
+bool meeting_bloom_contains(meeting_bloom_t B, meeting* x)
+  /*@requires B != NULL; @*/ ;
+
+void meeting_bloom_add(meeting_bloom_t B, meeting* x)
+  /*@requires B != NULL; @*/
+  /*@ensures meeting_bloom_contains(B, x); @*/ ;

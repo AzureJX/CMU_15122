@@ -1,0 +1,54 @@
+int hash_mul31(void* p)
+//@requires p!=NULL && \hastag(string*, p);
+{
+  string x = *(string*)p;
+  int h = 0;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h*31 + c;
+  }
+  return h;
+}
+
+int hash_lcg(void* p) 
+//@requires p!=NULL && \hastag(string*, p);
+{
+  string x = *(string*)p;
+  int h = 0xDEADBEEF;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h + c;
+    h = h*1664525 + 1013904223;
+  }
+  return h;
+}
+
+typedef bmk_t string_bloom_t;
+
+string_bloom_t string_bloom_new(int capacity) 
+/*@requires 0 < capacity; @*/
+/*@ensures \result != NULL && bloommaker_frozen(\result); @*/
+{
+    string_bloom_t B = bloommaker_new(capacity);
+    bloommaker_addhash(B, &hash_mul31);
+    bloommaker_addhash(B, &hash_lcg);    
+    bloommaker_freeze(B);
+    return B;
+}
+
+bool string_bloom_contains(string_bloom_t B, string x)
+/*@requires B != NULL; @*/
+{
+    string* sp = alloc(string);
+    *sp = x;
+    return bloommaker_contains(B, (void*)sp);
+}
+
+void string_bloom_add(string_bloom_t B, string x)
+/*@requires B != NULL; @*/
+/*@ensures string_bloom_contains(B, x); @*/
+{
+    string* sp = alloc(string);
+    *sp = x;
+    bloommaker_add(B, (void*)sp);
+}

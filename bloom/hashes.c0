@@ -1,0 +1,93 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <string>
+
+int hash_add(string x) {
+  int h = 0;
+  for (int i = 0; i < string_length(x); i++) {
+    h += char_ord(string_charat(x, i));
+  }
+  return h;
+}
+
+
+int hash_mul31(string x) {
+  int h = 0;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h*31 + c;
+  }
+  return h;
+}
+
+int hash_mul32(string s) {
+  int ret = 0;
+  int len = string_length(s);
+  for (int i = 0; i < len; i++) {
+    ret = ret * 32 + char_ord(string_charat(s, i));
+  }
+  return ret;
+}
+
+int hash_fnv(string x) { // http://isthe.com/chongo/tech/comp/fnv/
+  int h = 0;
+  for (int i = 0; i < string_length(x); i++) {
+    h ^= char_ord(string_charat(x, i));
+    h *= 16777619;
+  }
+  return h;
+}
+
+int hash_lcg(string x) { // Numerical Recipies LCG
+  int h = 0xDEADBEEF;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h + c;
+    h = h*1664525 + 1013904223;
+  }
+  return h;
+}
+
+int hash_murmur(string x) { // https://sites.google.com/site/murmurhash/
+  // 'm' is a mixing constant generated offline.
+  // Not really 'magic', just happens to work well.
+  int m = 0x5bd1e995;
+
+  // Initialize the hash to a 'random' value
+  int h = 0xC0C0FFEE ^ string_length(x);
+
+  // Mix 4 bytes at a time into the hash
+  int i = 0;
+  while (i + 4 <= string_length(x)) {
+    int k = char_ord(string_charat(x, i)) << 24;
+    k |= char_ord(string_charat(x, i+1)) << 16;
+    k |= char_ord(string_charat(x, i+2)) << 8;
+    k |= char_ord(string_charat(x, i+3));
+
+    k *= m;
+    k ^= (k >> 24) & 0x00FFFFFF;
+    k *= m;
+
+    h *= m;
+    h ^= k;
+
+    i += 4;
+  }
+
+  // Handle the last few bytes of the input array
+  if (i < string_length(x)) h ^= char_ord(string_charat(x, i));
+  if (i+1 < string_length(x)) h ^= char_ord(string_charat(x, i+1)) << 8;
+  if (i+2 < string_length(x)) h ^= char_ord(string_charat(x, i+2)) << 16;
+  if (i < string_length(x)) h *= m;
+
+  // Do a few final mixes of the hash to ensure the last few
+  // bytes are well-incorporated.
+
+  h ^= (h >> 13) & 0x7FFFF;
+  h *= m;
+  h ^= (h >> 15) & 0x1FFFF;
+
+  return h;
+}

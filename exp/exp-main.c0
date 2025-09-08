@@ -1,0 +1,80 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Clac, interface to a stack-based calculator language
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <string>
+#use <parse>
+#use <conio>
+#use <args>
+
+dict_t precedence() {
+  string[] A = alloc_array(string, 8);
+  A[1] = "||";
+  A[2] = "&&";
+  A[3] = "< > != ==";
+  A[4] = "<< >>";
+  A[5] = "+ -";
+  A[6] = "* / %";
+  A[7] = "**";
+  return dict_new(A, 8);
+}
+
+void top_level(bool exec) {
+  dict_t PREC = precedence();
+
+  printf("EXP top level\n");
+  printf("Execution: %s\n", exec ? "on" : "off");
+
+
+  while (true) {
+    // If there is nothing to be done on the queue and more input, get input
+    if (!eof()) {
+      printf("EXP>> ");
+      flush();
+      queue_t input = tokenize(readline());
+
+      // Parse input
+      queue_t output = parse(PREC, input);
+      if (output == NULL) {
+        printf("Error: could not parse input\n");
+
+      } else { // Report the parsed Clac program
+        printf("Corresponding Clac program: ");
+        assert(queue_empty(input));
+        while (!queue_empty(output)) {
+          string tok = deq(output);
+          printf("%s ", tok);
+          enq(input, tok);
+        }
+        printf("\n");
+
+        if (exec) { // Attempt to execute the Clac program
+          istack_t S = istack_new();
+          eval(S, input);
+          assert(!istack_empty(S) && queue_empty(input));
+          int result = ipop(S);
+          assert(istack_empty(S));
+          printf("Result: %d\n", result);
+        }
+      }
+    } else {
+      return;
+    }
+  }
+}
+
+int main() {
+  /* pass file names on command line, no flags */
+  /* these will be processed in order */
+  bool* exec = alloc(bool);
+  args_flag("-x", exec);
+  args_parse();
+  top_level(*exec);
+  return 0;
+}

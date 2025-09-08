@@ -1,0 +1,21 @@
+int main() {
+
+  bundle_t B = read_words("texts/scott_tweet.txt");
+  string[] tweet = string_bundle_array(B);
+  int tweet_len = string_bundle_length(B);
+  
+  assert(no_dupes(tweet, 0, tweet_len));
+  string[] A = alloc_array(string,5);
+  A[0]="abc";A[1]="bac";A[2]="ca";A[3]="kk";A[4]="bac";
+  assert(no_dupes(A, 0, 5)==false);
+  string[] C = alloc_array(string,5);
+  C[0]="abc";C[1]="bac";C[2]="ca";C[3]="kk";C[4]="zabc";
+  
+  assert(binsearch("bac",C,5)==1);
+  assert(binsearch("kk",C,5)==3);
+  assert(binsearch("kkk",C,5)==-1);
+  
+  printf("All tests passed!\n");
+  return 0;
+
+}

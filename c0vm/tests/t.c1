@@ -1,0 +1,67 @@
+#use <conio>
+#use <string>
+
+// int main() {
+//     int *p = alloc(int);
+//     int *q = (int*)(void*)p;
+//     char *c = alloc(char);
+//     char *k = (char*)(void*)c;
+//     //@assert(\hastag(char*,(void*)c));
+//     //@assert(\hastag(char*,(void*)k));
+//     //@assert(\hastag(int*,(void*)p));
+//     //@assert(\hastag(int*,(void*)q));
+//     // int *d = (int*)(void*)c;
+//     return 0;
+// }
+// int main() {
+//     int *p = NULL;
+//     //@assert(\hastag(char*,(void*)p));
+//     return 0;
+// }
+
+// typedef int f(int a, char b);
+
+// int h(f* func) {
+//     int a = (*func)(100, 'a');
+//     return a;
+// }
+
+// int helper(int a, char b) {
+//     printchar(b);
+//     return a+1;
+// }
+
+// int main() {
+//     int *p = NULL;
+//     //@assert(\hastag(char*, (void*)p));
+//     //@assert(\hastag(bool*, (void*)p));
+//     //@assert(\hastag(int*, (void*)p));
+//     int *p1 = alloc(int);
+//     *p1 = 8;
+//     void *q = (void*)p1;
+//     //@assert(*(int*)q==8);
+//     return h(&helper);
+// }
+
+// function pointer for native function
+typedef void f(char c);
+typedef string s(string s1, string s2);
+
+void helper(char c, f* func) {
+    (*func)(c);
+}
+
+string helper2(string s1, string s2, string s3, s* jf) {
+    string string1 = (*jf)(s1,s2);
+    string string2 = (*jf)(string1,s3);
+    return string2;
+}
+
+int main() {
+    helper('k', &printchar);
+    helper('\n', &printchar);
+    string S = helper2("nihao ","woshi ", "xujiawei!", &string_join);
+    print(S);
+    printchar('\n');
+    return 0;
+}

@@ -1,0 +1,87 @@
+// int main() {
+// return 15 * ((1<<10) - 24) + 122;
+// }
+
+// int main() {
+//     int x = 15122;
+//     assert(true);
+//     int y = x * x;
+//     return y;
+// }
+
+// int main() {
+//     char *p = NULL;
+//     assert(false);
+//     return 0;
+// }
+// #use <conio>
+
+// int increment(int a, int b) {
+//     return a/b;
+// }
+
+// int main () {
+//     int a=1;
+//     int b=2;
+//     print("good\n");
+//     print("morning\n");
+//     return increment(a,b);
+// }
+
+// struct image {
+//     int x;
+//     char y;
+// };
+
+// int main() {
+    // struct image *i = alloc(struct image);
+    // i->x = 3;
+    // i->y = '~';
+    // printint(i->x);
+    // printchar(i->y);
+    // return 0;
+// }
+
+// int main() {
+//     char[] p = alloc_array(char, 3);
+//     //@assert(3==\length(p));
+//     p[2] = 'c';
+//     p[0] = '*';
+//     printchar(p[0]);
+//     printchar(p[1]);
+//     printchar(p[2]);
+//     int[] o = alloc_array(int, 50);
+//     o[0x5FFFFFFF] = 9;
+//     return 0;
+// }
+// int main () {
+//     int *s = alloc(int);
+//     *s = 7;
+//     printint(*s);
+//     int **a = alloc(int*);
+//     int *b = alloc(int);
+//     int **f = alloc(int*);
+//     *b = 1;
+//     *a = b;
+//     *f = *a;
+//     printint(**a);
+//     printint(**f);
+//     // int *c = NULL;
+//     // printint(*c);
+//     char *p = alloc(char);
+//     *p = '=';
+//     printchar(*p);
+//     int *k = alloc(int);
+//     printint(*k);
+//     return 0;
+// }
+
+string f(int a, int b) {
+    int c = a + b;
+    int d = c + a + b;
+    return "stirng";
+}
+int main () {
+    string s = f(1,2);
+    return 0;
+}

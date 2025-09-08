@@ -1,0 +1,60 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+#use <parse>
+
+// You are welcome to define helper functions for your tests
+
+
+int main() {
+  // EXAMPLE
+
+  // Define a dictionary
+  string[] A = alloc_array(string, 3);
+  A[2] = "**"; // ’**’ has the highest precedence, 2
+  A[1] = "* /"; // ’*’ and ’/’ have the same precedence, 1
+  A[0] = "+ -"; // ’+’ and ’-’ have the same precedence, 0
+  dict_t D = dict_new(A, 3);
+
+  // Define a stack of operators
+  stack_t S = stack_new();
+  push(S, "-");
+  push(S, "*");
+  push(S, "**");
+
+  stack_t S1 = stack_new();
+  push(S1, "/");
+  push(S1, "*");
+  push(S1, "**");
+  
+  stack_t S2 = stack_new();
+  push(S2, "-");
+  push(S2, "*");
+  push(S2, "+");
+
+  // Check if your is_prestack works
+  assert(is_precstack(D, S));
+
+  // ADD MORE TESTS TO CONVINCE YOU THAT YOUR is_precstack WORKS
+  assert(!is_precstack(D, S1));
+  assert(!is_precstack(D, S2));
+  
+  // Check if modify the stack
+  string s = pop(S);
+  string s1 = pop(S);
+  assert(string_equal(s, "**"));
+  assert(string_equal(s1, "*"));
+  push(S, "*");
+  push(S, "**");
+  string s2 = pop(S1);
+  assert(string_equal(s2, "**"));
+  push(S1, "**");
+  string s3 = pop(S2);
+  assert(string_equal(s3, "+"));
+  push(S2, "+");
+
+  printf("All tests passed!\n");
+  return 0;
+}

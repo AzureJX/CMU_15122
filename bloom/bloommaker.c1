@@ -1,0 +1,171 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Generic Bloom filter maker
+ *
+ * 15-122 Principles of Imperative Computation */
+
+#use <util>
+#use <conio>
+
+
+/************************************************************************/
+/**************************** Client Interface **************************/
+
+typedef void* elem;                // Elements of the Bloom filter
+typedef int hash_fn(elem x);       // hash function
+
+
+/************************* End Client Interface *************************/
+/************************************************************************/
+
+
+/************************************************************************/
+/************************* BEGIN IMPLEMENTATION *************************/
+
+typedef struct list_node list;  // NULL-terminated
+struct list_node {
+  hash_fn* data;  // data != NULL
+  list* next;
+};
+
+struct bmk_header {
+  int capacity;    // capacity > 0
+  bt_t table;      // bt_size(table) == capacity
+  list* hashes;    // NULL-terminated
+  bool frozen;
+};
+typedef struct bmk_header bmk;
+
+/******************* MAKE YOUR EDITS BETWEEN HERE ... *******************/
+bool is_acyclic(list* l) {
+  if (l==NULL) return true;
+  list* t = l;
+  list* h = l->next;
+  while (t!=h) {
+    if (h==NULL || h->next == NULL) return true;
+    //@assert t!=NULL;
+    t = t->next;
+    h = h->next->next;
+  }
+  //@assert h==t;
+  return false;
+}
+
+bool is_fragment(list* l) { // check data != NULL
+  if (l==NULL) return true;
+  //@assert l!=NULL;
+  return (l->data!=NULL) && is_fragment(l->next);
+}
+
+bool is_bmk(bmk* B) {
+  return B!=NULL && B->table!=NULL && 
+         is_acyclic(B->hashes) && is_fragment(B->hashes) && 
+         B->capacity > 0 && bt_size(B->table) == B->capacity;
+}
+
+bool bloommaker_frozen(bmk* B)
+//@requires is_bmk(B);
+{
+  return B->frozen;
+}
+
+bmk* bloommaker_new(int capacity)
+/*@requires 0 < capacity;                                  @*/
+/*@ensures is_bmk(\result) && !bloommaker_frozen(\result); @*/
+{
+  bmk* B = alloc(bmk);
+  B->capacity = capacity;
+  B->table = bt_new(capacity);
+  B->hashes = NULL; // don't alloc(list), would be useless
+  B->frozen = false;
+  return B;
+}
+
+void bloommaker_freeze(bmk* B)
+/*@requires is_bmk(B) && !bloommaker_frozen(B);            @*/
+/*@ensures bloommaker_frozen(B);                           @*/
+{
+  B->frozen = true;
+}
+
+// Adds a hash function to a Bloom maker
+void bloommaker_addhash(bmk* B, hash_fn* h)
+/*@requires is_bmk(B) && !bloommaker_frozen(B);            @*/
+/*@requires h != NULL;                                     @*/
+/*@ensures !bloommaker_frozen(B);                          @*/
+{
+  list* l = alloc(list);
+  l->data = h;
+  l->next = B->hashes;
+  B->hashes = l;
+}
+
+// Checks an element against a finished Bloom filter
+bool bloommaker_contains(bmk* B, elem x)
+/*@requires is_bmk(B) && bloommaker_frozen(B);             @*/
+{
+  int index;
+  for (list* l = B->hashes; l != NULL; l = l->next) {
+    index = abs((*l->data)(x) % B->capacity);
+    if (!bt_get(B->table, index)) return false;
+  }
+  return true;
+}
+
+// Adds an element to a finished Bloom filter
+void bloommaker_add(bmk* B, elem x)
+/*@requires is_bmk(B) && bloommaker_frozen(B);             @*/
+/*@ensures bloommaker_contains(B, x);                      @*/
+{
+  int index;
+  for (list* l = B->hashes; l != NULL; l = l->next) {
+    index = abs((*l->data)(x) % B->capacity);
+    bt_set(B->table, index);
+  } 
+}
+
+/***************************** ... AND HERE *****************************/
+
+
+ // Client type
+typedef bmk* bmk_t;
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/************************************************************************/
+/******************************* Interface ******************************/
+
+// typedef ______* bmk_t;
+
+// Done building the Bloom filter?
+bool bloommaker_frozen(bmk_t B)
+  /*@requires B != NULL;                                     @*/ ;
+
+// Create a new Bloom maker of size capacity
+bmk_t bloommaker_new(int capacity)
+  /*@requires 0 < capacity;                                  @*/
+  /*@ensures \result != NULL && !bloommaker_frozen(\result); @*/ ;
+
+// Freeze a Bloom maker
+void bloommaker_freeze(bmk_t B)
+  /*@requires B != NULL &&  !bloommaker_frozen(B);           @*/
+  /*@ensures bloommaker_frozen(B);                           @*/ ;
+
+// Adds a hash function to a Bloom maker
+void bloommaker_addhash(bmk_t B, hash_fn* h)
+  /*@requires B != NULL && !bloommaker_frozen(B);            @*/
+  /*@requires h != NULL;                                     @*/
+  /*@ensures !bloommaker_frozen(B);                          @*/ ;
+
+// Checks an element against a finished Bloom filter
+bool bloommaker_contains(bmk_t B, elem x)
+  /*@requires B != NULL && bloommaker_frozen(B);             @*/ ;
+
+// Adds an element to a finished Bloom filter
+void bloommaker_add(bmk_t B, elem x)
+  /*@requires B != NULL && bloommaker_frozen(B);             @*/
+  /*@ensures bloommaker_contains(B, x);                      @*/ ;

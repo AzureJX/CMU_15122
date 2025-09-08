@@ -1,0 +1,59 @@
+bool is_precstack(dict_t D, stack_t S) 
+//@requires D != NULL && S != NULL;
+{
+    if (stack_empty(S)) return true; // S is empty
+    string ope_hi = pop(S);
+    if (stack_empty(S)) {
+        push(S, ope_hi);
+        return true; // S only has one element
+    }
+    string ope_lo = pop(S);
+    if (dict_lookup(D, ope_hi) <= dict_lookup(D, ope_lo)) {
+        push(S, ope_lo);
+        push(S, ope_hi);
+        return false;
+    }
+    push(S, ope_lo);
+    bool result = is_precstack(D, S);
+    push(S, ope_hi);
+    return result;
+}
+
+queue_t parse(dict_t D, queue_t input)
+//@requires D != NULL && input != NULL;
+//@ensures \result == NULL || queue_empty(input);
+{
+    if (queue_empty(input)) return NULL;
+    queue_t outputQ = queue_new();
+    stack_t operatorS = stack_new();
+    bool intP = true;
+    bool opeP = false;
+    while (!queue_empty(input) || !stack_empty(operatorS)) {
+        if (intP) { // Integer phase
+            if (queue_empty(input)) return NULL;
+            string tok = deq(input);
+            if (!int_tokens(tok, 10)) return NULL;
+            enq(outputQ, tok);
+            intP = false;
+            opeP = true;
+        } else if (opeP) { // Operator phase
+            if (queue_empty(input)) { // The last step
+                while (!stack_empty(operatorS)) {
+                    enq(outputQ, pop(operatorS));
+                }
+            } else { // inputQ not empoty:
+                string tok = deq(input);
+                if (dict_lookup(D, tok) == -1) return NULL;
+                push(operatorS, tok); // Try to push it in first
+                while (!is_precstack(D, operatorS)) { // Use the helper!!!
+                    string token = pop(operatorS);
+                    enq(outputQ, pop(operatorS));
+                    push(operatorS, token);
+                }
+                intP = true;
+                opeP = false;
+            }
+        }
+    }
+    return outputQ;
+}
