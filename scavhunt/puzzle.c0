@@ -1,0 +1,107 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2024                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+// Allows you to use I/O functions like printf
+#use <conio>
+// Allows you to use string functions like string_join
+#use <string>
+// Allows you to use utility functions like abs() and min()
+#use <util>
+
+bool is_substring(string little, string big) {
+  int len = string_length(little);
+  int offset = string_length(big) - len;
+  while (offset >= 0)
+  //@loop_invariant offset <= string_length(big) - string_length(little);
+  {
+    if (string_equal(little, string_sub(big, offset, offset+len)))
+      return true;
+    offset--;
+  }
+  return false;
+}
+
+int f(string s1, string s2)
+//@ensures 0 <= \result && \result <= string_length(s1);
+//@ensures 0 <= \result && \result <= string_length(s2);
+//@ensures string_equal(string_sub(s1, 0, \result), string_sub(s2, 0, \result));
+/*@ensures \result == string_length(s1)
+        || \result == string_length(s2)
+        || string_charat(s1, \result) != string_charat(s2, \result); @*/
+{
+  int len = min(string_length(s1), string_length(s2));
+  for (int i = 0; i < len; i++) {
+    if (string_charat(s1, i) != string_charat(s2, i)) {
+      return i;
+    }
+  }
+  return len;
+}
+
+int g(string s)
+//@requires string_length(s) > 0;
+//@requires string_charat(s, 0) != string_charat(s, string_length(s) - 1);
+//@ensures 0 <= \result && \result < string_length(s)-1;
+//@ensures string_charat(s, \result) == string_charat(s, 0);
+//@ensures string_charat(s, \result+1) != string_charat(s, 0);
+{
+  int res = 0;
+  char c = string_charat(s, 0);
+  int len = string_length(s);
+  for (int i = 0; i < len; i++) {
+    if (c == string_charat(s, i)) {
+      res = i;
+    }
+  }
+  return res;
+}
+
+string h(string s)
+//@ensures is_substring(\result, s);
+/*@ensures string_length(s) < 128
+        || (string_length(\result) > 1
+            && string_charat(\result, 0)
+               == string_charat(\result, string_length(\result) - 1)); @*/
+{
+  if (string_length(s) < 128) {
+    return s;
+  }
+  int start_i = 0;
+  int end_i = 1;
+  for (int i = 0; i < 127; i++) {
+    for (int j = i + 1; j < 128; j++) {
+      if (i != j && string_charat(s, i) == string_charat(s, j)) {
+        start_i = i;
+        end_i = j;
+      }
+    }
+  }
+  return string_sub(s, start_i, end_i+1);
+}
+
+
+/**************** DO NOT CHANGE THE CODE BELOW THIS LINE ********************/
+
+int f(string s1, string s2)
+/*@ensures 0 <= \result && \result <= string_length(s1);                   @*/
+/*@ensures 0 <= \result && \result <= string_length(s2);                   @*/
+/*@ensures string_equal(string_sub(s1, 0, \result),
+                        string_sub(s2, 0, \result));                       @*/
+/*@ensures \result == string_length(s1)
+        || \result == string_length(s2)
+        || string_charat(s1, \result) != string_charat(s2, \result);       @*/ ;
+
+int g(string s)
+/*@requires string_length(s) > 0;                                          @*/
+/*@requires string_charat(s, 0) != string_charat(s, string_length(s) - 1); @*/
+/*@ensures 0 <= \result && \result < string_length(s)-1;                   @*/
+/*@ensures string_charat(s, \result) == string_charat(s, 0);               @*/
+/*@ensures string_charat(s, \result+1) != string_charat(s, 0);             @*/ ;
+
+string h(string s)
+/*@ensures is_substring(\result, s);                                       @*/
+/*@ensures string_length(s) < 128
+        || (string_length(\result) > 1
+           && string_charat(\result, 0)
+               == string_charat(\result, string_length(\result) - 1));     @*/ ;

@@ -1,0 +1,77 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2024                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/* The pixel interface describes the pixel type. It also defines
+   five functions: get_red(p), get_green(p), get_blue(p),
+   get_alpha(p), and make_pixel(a,r,g,b).  If you're *given* a
+   working pixel library, you can use the pixel interface
+   without knowing how pixels are represented.
+
+   When writing this file, only use the pixel interface.  We'll
+   check your code by compiling and running it against different
+   implementations of the pixel interface.
+
+   There are  tasks in this file:
+    - Task 1 - Implement quantize() as described in the writeup
+    - Task 2 - Testing quantize()
+*/
+
+/* Task 1 - Implement quantize() as described in the writeup
+
+   The body of this function should not need more than 5 lines.
+   Particularly unreasonable code will incur a manual deduction.
+*/
+
+pixel_t quantize(pixel_t p, int q)
+//@requires 0 <= q && q <= 8;
+{ 
+  int red = get_red(p) & (0xFF << q);
+  int green = get_green(p) & (0xFF << q);
+  int blue = get_blue(p) & (0xFF << q);
+  int alpha = get_alpha(p);
+  return make_pixel(alpha, red, green, blue);
+}
+
+/* Task 2 - Testing quantize()
+
+   Write some more tests for quantize. Remember to respect the pixels
+   interface! We *will* run these tests, and will grade them based on
+   their ability to catch buggy implementations of quantize.
+
+   You do not need to catch all our bugs in order to get full points
+   in this task.
+*/
+
+void test_quantize() {
+  pixel_t p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 4);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xF0);
+  assert(get_green(p) == 0xF0);
+  assert(get_blue(p)  == 0xF0);
+
+  pixel_t a = quantize(make_pixel(0x45, 0x6B, 0xBE, 0xD7), 5);
+  assert(get_alpha(a) == 0x45);
+  assert(get_red(a)   == 0x60);
+  assert(get_green(a) == 0xA0);
+  assert(get_blue(a)  == 0xC0);
+
+  pixel_t e = quantize(make_pixel(0xAF, 0xB4, 0xC5, 0xD9), 2);
+  assert(get_alpha(e) == 0xAF);
+  assert(get_red(e)   == 0xB4);
+  assert(get_green(e) == 0xC4);
+  assert(get_blue(e)  == 0xD8);
+
+  pixel_t b = quantize(make_pixel(0x45, 0x6B, 0xBE, 0xD7), 8);
+  assert(get_alpha(b) == 0x45);
+  assert(get_red(b)   == 0);
+  assert(get_green(b) == 0);
+  assert(get_blue(b)  == 0);
+
+  pixel_t c = quantize(make_pixel(0x45, 0x6B, 0x6B, 0xD7), 0);
+  assert(get_alpha(c) == 0x45);
+  assert(get_red(c)   == 0x6B);
+  assert(get_green(c) == 0x6B);
+  assert(get_blue(c)  == 0xD7);
+
+}

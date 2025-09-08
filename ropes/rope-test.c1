@@ -1,0 +1,79 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+// void* entry_key(void* x)
+// //@requires x!= NULL && \hastag(rope*, x);
+// //@ensures \result!=NULL && \hastag(string*, \result);
+// {
+//   string* p = alloc(string);
+//   *p = ((rope*)x)->data;
+//   return (void*)p;
+// }
+
+// int hash_lcg(string x) { // copied from the PG Bloom
+//   int h = 0xDEADBEEF;
+//   for (int i = 0; i < string_length(x); i++) {
+//     int c = char_ord(string_charat(x, i));
+//     h = h + c;
+//     h = h*1664525 + 1013904223;
+//   }
+//   return h;
+// }
+
+// int hash(void* k)
+// //@requires k!=NULL && \hastag(string*, k);
+// {
+//   return hash_lcg(*(string*)k);
+// }
+
+// bool equiv(void* k1, void* k2)
+// //@requires k1!=NULL && k2!=NULL;
+// //@requires \hastag(string*, k1) && \hastag(string*, k2);
+// {
+//   return string_equal(*(string*)k1, *(string*)k2);
+// }
+
+int main() {
+  // sub test
+  rope_t R1 = rope_new("t");
+  rope_t R2 = rope_new("otally");
+  rope_t R3 = rope_new("efficien");
+  rope_t R4 = rope_new("t");
+  rope_t R12 = rope_join(R1, R2);
+  rope_t R34 = rope_join(R3, R4);
+  rope_t R = rope_join(R12, R34);
+  
+  rope_t R_sub = rope_sub(R, 1, 16);
+  assert(R->left->right==R_sub->left);
+  assert(R->right==R_sub->right);
+
+  // reduce test
+  rope_t r1 = rope_new("ab");
+  rope_t r2 = rope_new("ra");
+  rope_t r3 = rope_new("cad");
+  rope_t r4 = rope_new("ab");
+  rope_t r5 = rope_new("ra");
+  rope_t r12 = rope_join(r1, r2);
+  rope_t r34 = rope_join(r3, r4);
+  rope_t r345 = rope_join(r34, r5);
+  rope_t r = rope_join(r12, r345);
+  rope_print(r);
+
+
+  
+
+  hdict_t D = hdict_new(5, &entry_key, &hash, &equiv);
+  rope_t R_reduced = reduce(r, D);
+  rope_print(R_reduced);
+  
+
+
+
+  printf("All tests passed!\n");
+  return 0;
+}

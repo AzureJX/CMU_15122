@@ -1,0 +1,231 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Ropes
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <conio>
+#use <string>
+#use <util>
+
+/************************************************************************/
+/**************** BEGIN IMPLEMENTATION (edit this part) *****************/
+
+typedef struct rope_node rope;
+struct rope_node {
+  int len;
+  rope* left;
+  rope* right;
+  string data;
+};
+
+// Forward declaration (do not edit)
+void rope_print(rope* R);
+
+/* Include your code between HERE ... */
+bool is_rope(rope* R) {
+  if (R==NULL) return true; // empty string
+  if (R->left == NULL && R->right == NULL) { // leaf
+    return R->len > 0 &&
+           R->len == string_length(R->data);
+  } else { // concatenation node
+    return R->left != NULL && R->right != NULL &&
+           R->len > 0 &&
+           R->len == R->left->len + R->right->len &&
+           is_rope(R->left) && is_rope(R->right);
+  }
+}
+
+int rope_length(rope* R) // total string length
+//@requires is_rope(R);
+/*@ensures \result >= 0; @*/
+{
+  if (R==NULL) return 0;
+  return R->len;
+}
+
+rope* rope_new(string s)
+//@ensures is_rope(\result);
+{
+  if (string_equal(s, "")) return NULL;
+  rope* R = alloc(rope);
+  R->len = string_length(s);
+  R->data = s;
+  return R;
+}
+
+rope* rope_join(rope* R, rope* S)
+/*@requires rope_length(R) <= int_max() - rope_length(S); @*/
+//@requires is_rope(R) && is_rope(S);
+//@ensures is_rope(\result);
+{
+  if (R==NULL) return S;
+  if (S==NULL) return R;
+  rope* Ro = alloc(rope);
+  Ro->left = R;
+  Ro->right = S;
+  Ro->len = R->len + S->len;
+  return Ro;
+}
+
+string rope_tostring(rope* R)
+//@requires is_rope(R);
+/*@ensures string_length(\result) == rope_length(R); @*/
+{
+  if (R==NULL) return "";
+  if (R->left == NULL && R->right ==NULL)
+    return R->data;
+  return string_join(rope_tostring(R->left), rope_tostring(R->right));
+}
+
+char rope_charat(rope* R, int i)
+//@requires is_rope(R);
+/*@requires 0 <= i && i < rope_length(R); @*/
+{
+  if (R->left == NULL && R->right ==NULL) // leaf
+    return string_charat(R->data, i);
+  if (i >= R->left->len)
+    return rope_charat(R->right, i-R->left->len);
+  else 
+    return rope_charat(R->left, i);
+}
+
+rope* rope_sub(rope* R, int lo, int hi)
+//@requires is_rope(R);
+/*@requires 0 <= lo && lo <= hi && hi <= rope_length(R); @*/
+/*@ensures rope_length(\result) == hi - lo; @*/
+{
+  if (R==NULL) return NULL;
+  if (R->left == NULL && R->right == NULL) { // leaf
+    if (hi-lo == R->len) return R; // sharing!!!
+    else return rope_new(string_sub(R->data, lo, hi)); // new
+  }
+  if (hi-lo == R->len) return R; // sharing!!!
+  if (lo>=R->left->len) // go right
+    return rope_sub(R->right, lo-R->left->len, hi-R->left->len);
+  if (hi<R->left->len) // go left
+    return rope_sub(R->left, lo, hi);
+  else // in the middle
+    return rope_join(rope_sub(R->left, lo, R->left->len),
+                     rope_sub(R->right, 0, hi-R->left->len));
+}
+
+void* entry_key(void* x)
+//@requires x!= NULL && \hastag(rope*, x);
+//@ensures \result!=NULL && \hastag(string*, \result);
+{
+  string* p = alloc(string);
+  *p = rope_tostring((rope*)x);
+  return (void*)p;
+}
+
+int hash_lcg(string x) { // copied from the PG Bloom
+  int h = 0xDEADBEEF;
+  for (int i = 0; i < string_length(x); i++) {
+    int c = char_ord(string_charat(x, i));
+    h = h + c;
+    h = h*1664525 + 1013904223;
+  }
+  return h;
+}
+
+int hash(void* k)
+//@requires k!=NULL && \hastag(string*, k);
+{
+  return hash_lcg(*(string*)k);
+}
+
+bool equiv(void* k1, void* k2)
+//@requires k1!=NULL && k2!=NULL;
+//@requires \hastag(string*, k1) && \hastag(string*, k2);
+{
+  return string_equal(*(string*)k1, *(string*)k2);
+}
+
+rope* reduce(rope* R, hdict_t D)
+//@requires is_rope(R) && D!=NULL;
+{
+  if (R==NULL) return NULL;
+  string* p = alloc(string);
+  *p = rope_tostring(R);
+  rope* Ro = (rope*)hdict_lookup(D, (void*)p);
+  if (Ro!=NULL) {
+    // println("I found it!");
+    // rope_print(Ro);
+    // println("\n");
+    return Ro; // change R into Ro: reduced version of R
+  }
+  if (R->left == NULL && R->right ==NULL){ // leaf
+    hdict_insert(D, (void*)R);
+    return R;
+  }
+  R->left = reduce(R->left, D);
+  R->right = reduce(R->right, D);
+  // println("I insert this rope into dict:");
+  // rope_print(R);
+  // println("\n"); 
+  hdict_insert(D, (void*)R);
+  return R;
+}
+
+void rope_reduce(rope*[] A, int n)
+/*@requires n == \length(A); @*/
+{
+  if (n==0) return; // can't create the dictionary!!!
+  // can't create a dictionary with length 0!!!
+  hdict_t D = hdict_new(2*n, &entry_key, &hash, &equiv);
+  for (int i=0; i<n; i++) {
+    A[i] = reduce(A[i], D);
+  }
+  // string *p = alloc(string);';lk
+  // *p="abr";
+  // printbool(hdict_lookup(D, (void*)p)!=NULL);
+  // *p="abra";
+  // printbool(hdict_lookup(D, (void*)p)!=NULL);
+}
+
+/* ... and HERE */
+
+
+// This next function is not graded, but implementing it is likely to make
+// debugging the rest of your code a lot easier
+void rope_print(rope* R)  {
+  if (R->left == NULL && R->right ==NULL) {
+    print(R->data);
+    return;
+  }
+  rope_print(R->left);
+  rope_print(R->right);
+}
+
+typedef rope* rope_t;
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/************************************************************************/
+/******************* Interface (leave this in place!) *******************/
+
+// typedef _______* rope_t;
+
+int    rope_length(rope_t R)
+  /*@ensures \result >= 0; @*/ ;
+rope_t rope_new(string s)
+  /*@ensures rope_length(\result) == string_length(s); @*/ ;
+rope_t rope_join(rope_t R, rope_t S)
+  /*@requires rope_length(R) <= int_max() - rope_length(S); @*/
+  /*@ensures rope_length(\result) == rope_length(R) + rope_length(S); @*/ ;
+string rope_tostring(rope_t R)
+  /*@ensures string_length(\result) == rope_length(R); @*/ ;
+char   rope_charat(rope_t R, int i)
+  /*@requires 0 <= i && i < rope_length(R); @*/ ;
+rope_t rope_sub(rope_t R, int lo, int hi)
+  /*@requires 0 <= lo && lo <= hi && hi <= rope_length(R); @*/
+  /*@ensures rope_length(\result) == hi - lo; @*/ ;
+void   rope_reduce(rope_t[] A, int n)
+  /*@requires n == \length(A); @*/ ;
+void   rope_print(rope_t A);

@@ -1,0 +1,77 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+
+int main() {
+  // Create a few text buffers, some correct others incorrect
+  tbuf* A = alloc(tbuf);
+  dll* n1 = alloc(dll); dll* n2 = alloc(dll); dll* n3 = alloc(dll);
+  dll* n4 = alloc(dll); dll* n5 = alloc(dll);
+  n1->prev = alloc(dll); n1->next = n2; //dummy start
+  n2->prev = n1; n2->data = 'a'; n2->next = n3;
+  n3->prev = n2; n3->data = 'b'; n3->next = n4;
+  n4->prev = n3; n4->next = alloc(dll); //dummy end
+  n5->prev = n1; n5->data = 'b'; n5->next = n4; //bad cursor
+  A->cursor = n5; A->start = n1; A->end = n4;
+
+  tbuf* B = alloc(tbuf);
+  dll* o1 = alloc(dll); dll* o2 = alloc(dll); dll* o3 = alloc(dll); 
+  dll* o4 = alloc(dll); dll* o5 = alloc(dll); 
+  o1->prev = alloc(dll); o1->next = o2; //dummy start
+  o2->prev = o1; o2->data = 'a'; o2->next = o5; // !
+  o3->prev = o2; o3->data = 'b'; o3->next = o4;
+  o4->prev = o3; o4->next = alloc(dll); //dummy end
+  o5->prev = o2; o5->data = 'b'; o5->next = o4; // !
+  B->cursor = o2; B->start = o1; B->end = o4;
+
+  tbuf* C = alloc(tbuf);
+  dll* d1 = alloc(dll); dll* d2 = alloc(dll); 
+  dll* d4 = alloc(dll); dll* d3 = alloc(dll); 
+  d1->prev = alloc(dll); d1->next = d2; //dummy start
+  d2->prev = d1; d2->data = 'w'; d2->next = d3; // !
+  d3->prev = d2; d3->data = 'h'; d3->next = d4;
+  d4->prev = d3; d4->next = alloc(dll); //dummy end
+  C->cursor = d4; C->start = d1; C->end = d4;
+
+  tbuf* D = alloc(tbuf); // NULL
+  
+  tbuf* E = tbuf_new(); // valid empty tbuf
+  // dll* e1 = alloc(dll); dll* e2 = alloc(dll);
+  // e1->prev = alloc(dll); e1->next = e2;
+  // e2->prev = e1; e2->next = alloc(dll);
+  // E->cursor = e2; E->start = e1; E->end = e2;
+
+  tbuf* F = alloc(tbuf); // NULL
+  dll* f1 = alloc(dll); dll* f2 = alloc(dll);
+  f1->prev = alloc(dll); // f1->next is NULL
+  f2->prev = f1; f2->next = alloc(dll);
+  F->cursor = f2; F->start = f1; F->end = f2;
+
+  // Using them, test your is_tbuf
+  assert(!is_tbuf(A));
+  assert(!is_tbuf(B));
+
+  assert(is_tbuf(C));
+  assert(tbuf_at_right(C));
+  assert(!tbuf_at_left(C));  
+  assert(tbuf_delete(C)=='h');
+  tbuf_insert(C, 'a');
+  assert(C->cursor->prev->data == 'a');
+
+  assert(!is_tbuf(D));
+
+  assert(is_tbuf(E));
+  tbuf_insert(E, 'b');
+  tbuf_insert(E, 'c');
+  tbuf_backward(E);
+  assert(tbuf_delete(E)=='b');
+  tbuf_forward(E);
+  assert(tbuf_delete(E)=='c');
+
+  assert(!is_tbuf(F));
+
+  printf("All tests passed!\n");
+  return 0;
+}

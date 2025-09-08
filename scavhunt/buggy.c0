@@ -1,0 +1,70 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2024                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <string>
+#use <conio>
+
+// GENERAL INSTRUCTIONS:
+// - This code is syntactically correct, but contains a few bugs.
+// - The function headers and contracts are correct: you should not modify them.
+// - This code uses functions from the string system library.
+//   See https://c0.cs.cmu.edu/docs/c0-libraries.pdf for what they do.
+
+
+// Fibonacci function -- f(0) = 0; f(1) = 1; f(i+2) = f(i) + f(i+1)
+// EXAMPLES:
+// - f(0) returns 0
+// - f(4) returns 3
+// - f(8) returns 21
+// INSTRUCTIONS: If this function has a bug, fix the line where it occurs,
+//               but you may not rewrite f
+int f(int n)
+//@requires n >= 0;
+{
+  int i = 0;
+  int prev = 0;
+  int res = 1;
+  while (i < n)
+  {
+    res = res + prev;
+    prev = res - prev;
+    i++;
+  }
+  return prev; // instead of res
+}
+
+// Returns the f(i)'th character of s, wrapping around if the length of s
+// is less than i
+// EXAMPLES:
+// - get_char("hello", 0) returns 'h'
+// - get_char("hello", 4) returns 'l'
+// - get_char("hello", 8) returns 'e'
+// INSTRUCTIONS: if this function has a bug, fix the line where it occurs.
+char get_char(string s, int i)
+//@requires i >= 0;
+//@requires string_length(s) > 0;
+{
+  int n = f(i);
+  return string_charat(s, n%string_length(s)); // mod
+}
+
+// Constructs a string that repeats seed r times and returns its f(i)'th
+// character wrapping around.
+// EXAMPLES:
+// - get_char_on_repeated_string("abcd", 3, 0) returns 'a'
+// - get_char_on_repeated_string("abcd", 5, 4) returns 'd'
+// - get_char_on_repeated_string("abcd", 1, 8) returns 'b'
+// INSTRUCTIONS: if this function has a bug, fix the line where it occurs.
+char get_char_on_repeated_string(string seed, int r, int i)
+//@requires i >= 0;
+//@requires r > 0;
+//@requires string_length(seed) > 0;
+{
+  string s = "";
+  for (int k=0; k < r; k++)
+    s = string_join(s, seed);
+  // println(s);
+
+  return get_char(s, i); // not f(i)
+}

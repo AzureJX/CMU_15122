@@ -1,0 +1,18 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2024                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/* Respecting interfaces
+
+   This implementation of the function opacify() takes a pixel and
+   return a pixel with alpha intensity 0xFF and with other intensities
+   unchanged.  It does NOT currently respect the pixel interface:
+   change it so that it does.
+*/
+
+pixel_t opacify(pixel_t p) {
+  int red = get_red(p);
+  int green = get_green(p);
+  int blue = get_blue(p);
+  return make_pixel(255, red, green, blue);
+}

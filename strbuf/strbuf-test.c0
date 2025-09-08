@@ -1,0 +1,192 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2025                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <string>
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+bool newlen(strbuf* sb) 
+//@requires \length(sb->buf) == sb->limit;
+{
+  return true; 
+}
+
+bool new_is_strbuf(strbuf* sb) {
+  if (!(sb != NULL && 0 <= sb->len && sb->len < sb->limit && newlen(sb)))
+    return false;
+  if (sb->buf[sb->len] != '\0') return false;
+  for (int i=0; i < sb->len; i++)
+    if (sb->buf[i] == '\0') return false;
+  return true;
+}
+
+int main() {
+  strbuf *sb = alloc(strbuf);
+  assert(!is_strbuf(sb));
+  int limit = 5;
+  sb->limit = limit;
+  sb->len = 3; // wrong length
+  sb->buf = alloc_array(char, limit);
+  sb->buf[0] = 'a';
+  sb->buf[1] = '\0';
+  assert(!is_strbuf(sb));
+  
+  strbuf *sb11 = alloc(strbuf);
+  assert(!is_strbuf(sb11));
+  int limit11 = 6;
+  sb11->limit = 2;  // wrong limit
+  sb11->len = 3;
+  sb11->buf = alloc_array(char, limit11);
+  sb11->buf[0] = 'a'; sb11->buf[1] = 'd';
+  sb11->buf[2] = '6'; sb11->buf[3] = '\0';
+  assert(!is_strbuf(sb11));
+  
+  strbuf *sb22 = alloc(strbuf);
+  int limit22 = 12;
+  sb22->limit = limit22;
+  sb22->len = 3;
+  sb22->buf = alloc_array(char, limit22);
+  sb22->buf[0] = 'h'; sb22->buf[1] = '2';
+  sb22->buf[2] = 'o'; sb22->buf[3] = 'l';
+  assert(!is_strbuf(sb22));
+
+  int limit33 = 12;
+  strbuf *sb33 = alloc(strbuf);
+  sb33->limit = limit33;
+  sb33->len = 3;
+  sb33->buf = alloc_array(char, limit33);
+  sb33->buf[0] = 'b'; sb33->buf[1] = 'c';
+  sb33->buf[2] = '\0'; sb33->buf[3] = '\0';
+  assert(!is_strbuf(sb33));
+  
+  // 0
+  strbuf* sb0 = strbuf_new(1);
+  assert(sb0->buf[0] == '\0');
+  assert(new_is_strbuf(sb0));
+  assert(is_strbuf(sb0));
+
+  // 1
+  strbuf* sb1 = strbuf_new(3);
+  assert(sb1->buf[0] == '\0');
+  assert(new_is_strbuf(sb1));
+  assert(is_strbuf(sb1));
+  char[] str1 = alloc_array(char, 3);
+  str1[0] = 'a'; str1[1] = 'b'; str1[2] = '\0';
+  
+  strbuf_add(sb1, str1, 2); // "ab"
+  assert(new_is_strbuf(sb1));
+  assert(is_strbuf(sb1));
+  assert(sb1->buf[0] == 'a');
+  assert(sb1->buf[1] == 'b');
+  assert(sb1->buf[2] == '\0');
+  assert(sb1->limit == 3); // no resize
+
+  char[] str11 = strbuf_str(sb1);
+  assert(is_cstring(str11, 0, 3));
+  assert(strlen(str11, 0) == 2);
+  assert(str11 != sb1->buf); // fresh copy !
+  assert(str11[0] == 'a');
+  assert(str11[1] == 'b');
+  assert(str11[2] == '\0');
+
+  strbuf_addstr(sb1, str1); // "abab"
+  assert(new_is_strbuf(sb1));
+  assert(is_strbuf(sb1));
+  assert(sb1->buf[0] == 'a');
+  assert(sb1->buf[1] == 'b');
+  assert(sb1->buf[2] == 'a');
+  assert(sb1->buf[3] == 'b');
+  assert(sb1->buf[4] == '\0');
+  assert(sb1->limit >= 5); // resize
+  // if (sb1->limit > 5 ) assert(sb1->buf[5] == '\0');
+  // if (sb1->limit > 6 ) assert(sb1->buf[6] == '\0');
+
+  char[] str21 = strbuf_str(sb1);
+  assert(is_cstring(str21, 0, 5));
+  assert(strlen(str21, 0) == 4);
+  assert(str21 != sb1->buf);
+  assert(str21[0] == 'a');
+  assert(str21[1] == 'b');
+  assert(str21[2] == 'a');
+  assert(str21[3] == 'b');
+  assert(str21[4] == '\0');
+
+  // 2
+  strbuf* sb2 = strbuf_new(9);
+  assert(sb2->buf[0] == '\0');
+  sb2->buf[6] = '\0'; // unimportant
+  sb2->buf[7] = '\0'; // unimportant
+  sb2->buf[8] = 'd'; // unimportant
+  assert(new_is_strbuf(sb2));
+  assert(is_strbuf(sb2));
+  char[] str2 = alloc_array(char, 15); // larger than needed
+  str2[0] = '0'; str2[1] = 'b'; str2[2] = '3';
+  str2[3] = 'j'; str2[4] = '7'; str2[5] = '\0';
+
+  strbuf_addstr(sb2, str2);
+  assert(new_is_strbuf(sb2));
+  assert(is_strbuf(sb2));
+  assert(sb2->limit == 9); // no resize
+  assert(sb2->buf[0] == '0');
+  assert(sb2->buf[2] == '3');
+  assert(sb2->buf[4] == '7');
+  assert(sb2->buf[5] == '\0');
+  assert(sb2->buf[6] == '\0'); // unimportant
+  assert(sb2->buf[7] == '\0'); // unimportant
+  assert(sb2->buf[8] == 'd'); // unimportant
+
+  strbuf_add(sb2, str2, 5);
+  assert(new_is_strbuf(sb2));
+  assert(is_strbuf(sb2));
+  assert(sb2->limit >= 11); // resize
+  assert(sb2->buf[3] == 'j');
+  assert(sb2->buf[1] == 'b');
+  assert(sb2->buf[5] == '0');
+  assert(sb2->buf[7] == '3');
+  assert(sb2->buf[9] == '7');
+  assert(sb2->buf[10] == '\0');
+
+  // 3
+  strbuf* sb3 = strbuf_new(10);
+  char[] char1 = string_to_chararray("Hello!");
+  strbuf_add(sb3, char1, 6);
+  assert(sb3->limit==10);
+  assert(sb3->len==6);
+  assert(strcmp(sb3->buf,0,char1,0)==0);
+  char[] char2 = string_to_chararray("xxxxx");
+  char2[2] = '\0';
+  strbuf_add(sb3, char2, 2);
+  assert(sb3->limit==10);
+  assert(sb3->len==8);
+  char[] char_out = string_to_chararray("Hello!xx");
+  assert(strcmp(sb3->buf,0,char_out,0)==0);
+  
+  // 4
+  strbuf* sb4 = strbuf_new(10);
+  sb4->buf[3] = '\0';
+  sb4->buf[4] = 'a';
+  sb4->buf[5] = '\0';
+  sb4->buf[6] = 'p';
+  
+  char[] char3 = string_to_chararray("c in");
+  strbuf_add(sb4, char3, 4);
+  assert(sb4->buf[1] == ' ');
+  assert(sb4->buf[3] == 'n');
+  assert(sb4->buf[4] == '\0');
+  assert(sb4->buf[5] == '\0');
+  assert(sb4->buf[6] == 'p');
+  assert(sb4->len == 4);
+  assert(sb4->limit == 10);
+  char[] char4 = string_to_chararray("Valgrind please");
+  strbuf_add(sb4, char4, 15);
+  assert(sb4->len == 19);
+  assert(sb4->limit > 19);
+  assert(sb4->buf[4] == 'V');
+  assert(sb4->buf[5] == 'a');
+  assert(sb4->buf[6] == 'l');
+  assert(sb4->buf[12] == ' ');
+  
+  printf("All tests passed!\n");
+  return 0;
+}

@@ -1,0 +1,28 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2024                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <util>
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+int main() {
+  // Test some regular cases
+  pixel_t p1 = make_pixel(0x12, 0x34, 0x78, 0xAB);
+  assert(get_alpha(p1)==0x12);
+  assert(get_red(p1)==0x34);
+  assert(get_green(p1)==0x78);
+  assert(get_blue(p1)==0xAB);
+
+  // Run some edge cases
+  pixel_t p2 = make_pixel(0x00, 0xFF, 0xFF, 0x00);
+  assert(get_alpha(p2)==0x00);
+  assert(get_red(p2)==0xFF);
+  assert(get_green(p2)==0xFF);
+  assert(get_blue(p2)==0x00);
+
+
+  printf("All tests passed!\n");
+  return 0;
+}
